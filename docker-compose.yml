@@ -1,0 +1,76 @@
+version: "3.8"
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - logs-processing-network
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "logs-topic:1:1"
+    depends_on:
+      - zookeeper
+    networks:
+      - logs-processing-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: logs_db
+    networks:
+      - logs-processing-network
+
+  spark:
+    image: bitnami/spark:latest
+    container_name: spark
+    environment:
+      SPARK_MODE: master
+    ports:
+      - "8080:8080"
+    networks:
+      - logs-processing-network
+
+  spark-worker:
+    image: bitnami/spark:latest
+    container_name: spark-worker
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark:7077
+    depends_on:
+      - spark
+    networks:
+      - logs-processing-network
+
+  pyspark-app:
+    build: ./pyspark-app
+    container_name: pyspark-app
+    depends_on:
+      - spark
+      - kafka
+    networks:
+      - logs-processing-network
+    volumes:
+      - ./pyspark-app/src:/opt/spark-apps
+      - ./pyspark-app/jars:/root/.ivy2/jars
+
+networks:
+  logs-processing-network:
