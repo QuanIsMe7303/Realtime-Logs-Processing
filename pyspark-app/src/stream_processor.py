@@ -61,8 +61,9 @@ df = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP_SERVERS) \
     .option("subscribe", KAFKA_TOPIC) \
-    .option("startingOffsets", "earliest") \
+    .option("startingOffsets", "latest") \
     .load()
+    # .option("failOnDataLoss", "false") \
 
 df = df.withColumn("value", df["value"].cast("string"))
 
@@ -77,7 +78,8 @@ streaming_df = df_parsed.withColumn("values_json", from_json(col("json_data"), L
 query = streaming_df.writeStream \
     .outputMode("append") \
     .format("console") \
+    .trigger(processingTime='10 seconds') \
     .option("truncate", "true") \
-    .start()
-
-query.awaitTermination()
+    .option("checkpointLocation", "/opt/spark/checkpoints/kafka") \
+    .start() \
+    .awaitTermination()
