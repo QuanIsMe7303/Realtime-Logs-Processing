@@ -30,15 +30,33 @@ services:
     networks:
       - logs-processing-network
 
-  postgres:
-    image: postgres:latest
-    container_name: postgres
+  # postgres:
+  #   image: postgres:latest
+  #   container_name: postgres
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: logs_db
+  #   networks:
+  #     - logs-processing-network
+
+  cassandra:
+    image: 'bitnami/cassandra:latest'
+    container_name: cassandra
     ports:
-      - "5432:5432"
+      - "9042:9042"
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: logs_db
+      - CASSANDRA_CLUSTER_NAME=realtime_logs_cluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+      - CASSANDRA_INIT_SCRIPT=/docker-entrypoint-initdb.d/init.cql
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+      - ./cassandra/init.cql:/docker-entrypoint-initdb.d/init.cql
     networks:
       - logs-processing-network
 
@@ -73,6 +91,7 @@ services:
     depends_on:
       - spark
       - kafka
+      - cassandra
     networks:
       - logs-processing-network
     volumes:
@@ -97,5 +116,6 @@ volumes:
   spark-checkpoints:
   streaming-data:
   log-position:
+  cassandra_data:
 networks:
   logs-processing-network:

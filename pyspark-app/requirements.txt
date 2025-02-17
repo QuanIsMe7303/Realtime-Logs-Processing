@@ -1,4 +1,5 @@
 pyspark
 kafka-python
 psycopg2-binary
+cassandra-driver
 user-agents==2.2.0
