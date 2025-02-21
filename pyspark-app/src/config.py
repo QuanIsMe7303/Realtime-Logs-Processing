@@ -9,3 +9,7 @@ CASSANDRA_DB = "raw-logs"
 CASSANDRA_USER = "cassandra"
 CASSANDRA_PASSWORD = "cassandra"
 CASSANDRA_KEY_SPACE = "logs_analytics"
+
+# Elasticsearch Configuration
+ES_NODE = "elasticsearch"
+ES_PORT = "9200"

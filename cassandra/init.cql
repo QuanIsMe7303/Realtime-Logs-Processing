@@ -1,3 +1,5 @@
+DROP KEYSPACE IF EXISTS logs_analytics;
+
 -- Create keyspace
 CREATE KEYSPACE IF NOT EXISTS logs_analytics
 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};

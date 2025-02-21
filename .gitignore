@@ -1,2 +1,5 @@
 /data/access.log
 **/__pycache__/
+/pyspark-app/src/checkpoints
+/pyspark-app/jars
+commands.txt
