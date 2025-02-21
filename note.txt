@@ -1,0 +1,78 @@
+# Start the PySpark application on the Spark cluster  
+spark-submit --master spark://spark:7077 \
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3,com.datastax.spark:spark-cassandra-connector_2.12:3.2.0,org.elasticsearch:elasticsearch-spark-30_2.12:8.5.0 \
+    /opt/spark-apps/main.py  
+
+
+
+# Create an index in Elasticsearch for storing log data 
+curl -X PUT "http://elasticsearch:9200/logs_index" -H "Content-Type: application/json" -d'
+{
+  "mappings": {
+    "properties": {
+      "timestamp": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "window_start": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "window_end": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      
+      "request_count": { "type": "integer" },
+      "avg_bytes": { "type": "float" },
+      "total_bytes": { "type": "long" },
+      "error_count": { "type": "integer" },
+      "success_count": { "type": "integer" },
+      "unique_visitors": { "type": "integer" },
+      
+      "path": {
+        "type": "keyword",
+        "fields": {
+          "text": {
+            "type": "text"
+          }
+        }
+      },
+      "path_hits": { "type": "integer" },
+      "path_avg_bytes": { "type": "float" },
+      "path_errors": { "type": "integer" },
+      
+      "browser_type": { "type": "keyword" },
+      "browser_requests": { "type": "integer" },
+      "browser_avg_bytes": { "type": "float" },
+      
+      "ip_class": { "type": "keyword" },
+      "ip_requests": { "type": "integer" },
+      "unique_ips": { "type": "integer" },
+      
+      "p95_response_size": { "type": "long" },
+      "p99_response_size": { "type": "long" },
+      "max_response_size": { "type": "long" },
+      "min_response_size": { "type": "long" },
+      
+      "method": { "type": "keyword" },
+      "method_count": { "type": "integer" },
+      "method_avg_bytes": { "type": "float" },
+      
+      "avg_requests_ma3": { "type": "float" },
+      "avg_bytes_ma3": { "type": "float" },
+      "error_rate_ma3": { "type": "float" },
+      
+      "is_traffic_spike": { "type": "boolean" },
+      "is_error_spike": { "type": "boolean" },
+      "is_bandwidth_spike": { "type": "boolean" }
+    }
+  },
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1,
+    "index": {
+      "refresh_interval": "5s"
+    }
+  }
+}'

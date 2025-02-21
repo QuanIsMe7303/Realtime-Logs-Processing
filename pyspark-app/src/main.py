@@ -95,16 +95,10 @@ def write_to_elasticsearch(batch_df, batch_id):
     try:
         print(f"Starting to write batch {batch_id} to Elasticsearch")
         
-        # Step 1: Process basic metrics
         processed_df = analyze_traffic_patterns(batch_df)
-        
-        # Step 2: Calculate moving averages
         df_with_ma = calculate_moving_averages(processed_df)
-        
-        # Step 3: Detect anomalies
         final_df = detect_anomalies(df_with_ma)
         
-        # Step 4: Ensure timestamp fields are in correct format
         final_df = final_df \
             .withColumn("timestamp", col("timestamp").cast("timestamp")) \
             .withColumn("window_start", col("window_start").cast("timestamp")) \
@@ -112,7 +106,6 @@ def write_to_elasticsearch(batch_df, batch_id):
         
         print(f"Number of aggregated records: {final_df.count()}")
         
-        # Step 5: Write to Elasticsearch
         final_df.write \
             .format("org.elasticsearch.spark.sql") \
             .option("es.nodes", ES_NODE) \
@@ -164,16 +157,16 @@ def main():
         .trigger(processingTime='10 seconds') \
         .start()
    
-    # query1 = df_parsed.writeStream \
-    #     .foreachBatch(write_to_cassandra("raw_logs")) \
-    #     .trigger(processingTime='20 seconds') \
-    #     .outputMode("append") \
-    #     .option("checkpointLocation", "/tmp/checkpoints/raw_logs") \
-    #     .start()
+    query1 = df_parsed.writeStream \
+        .foreachBatch(write_to_cassandra("raw_logs")) \
+        .trigger(processingTime='30 seconds') \
+        .outputMode("append") \
+        .option("checkpointLocation", "/tmp/checkpoints/raw_logs") \
+        .start()
     
     query2 = df_parsed.writeStream \
         .foreachBatch(write_to_elasticsearch) \
-        .trigger(processingTime='5 seconds') \
+        .trigger(processingTime='10 seconds') \
         .outputMode("append") \
         .option("checkpointLocation", "/tmp/checkpoints/elasticsearch") \
         .start()

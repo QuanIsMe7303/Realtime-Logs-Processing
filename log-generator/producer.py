@@ -1,6 +1,7 @@
 from confluent_kafka import Producer
 import time
 import json
+import random
 import os
 
 POSITION_FILE = "/app/position/last_position.json"
@@ -56,7 +57,7 @@ def main():
                                callback=delivery_report)
                 producer.flush()
                 save_position(file.tell())
-                time.sleep(1)
+                time.sleep(random.uniform(0, 1))
 
 if __name__ == "__main__":
     main()
