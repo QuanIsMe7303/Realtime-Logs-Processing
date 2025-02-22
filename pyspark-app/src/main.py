@@ -157,12 +157,12 @@ def main():
         .trigger(processingTime='10 seconds') \
         .start()
    
-    query1 = df_parsed.writeStream \
-        .foreachBatch(write_to_cassandra("raw_logs")) \
-        .trigger(processingTime='30 seconds') \
-        .outputMode("append") \
-        .option("checkpointLocation", "/tmp/checkpoints/raw_logs") \
-        .start()
+    # query1 = df_parsed.writeStream \
+    #     .foreachBatch(write_to_cassandra("raw_logs")) \
+    #     .trigger(processingTime='30 seconds') \
+    #     .outputMode("append") \
+    #     .option("checkpointLocation", "/tmp/checkpoints/raw_logs") \
+    #     .start()
     
     query2 = df_parsed.writeStream \
         .foreachBatch(write_to_elasticsearch) \

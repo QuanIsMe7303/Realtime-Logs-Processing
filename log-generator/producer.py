@@ -7,12 +7,10 @@ import os
 POSITION_FILE = "/app/position/last_position.json"
 
 def save_position(position):
-    """Lưu vị trí đọc cuối cùng"""
     with open(POSITION_FILE, 'w') as f:
         json.dump({'position': position}, f)
 
 def load_position():
-    """Đọc vị trí đã lưu trước đó"""
     try:
         with open(POSITION_FILE, 'r') as f:
             data = json.load(f)
@@ -27,7 +25,6 @@ def delivery_report(err, msg):
         print(f"Message delivered to {msg.topic()} [{msg.partition()}]")
 
 def main():
-    # Cấu hình Kafka
     conf = {
         'bootstrap.servers': 'kafka:29092',
         'client.id': 'file-producer'
